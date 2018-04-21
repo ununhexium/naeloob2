@@ -68,4 +68,6 @@ dependencies {
      antlr "org.antlr:antlr4:${antlrVersion}"
 }
 
+compileJava.dependsOn generateGrammarSource
+
 sourceSets.main.java.srcDir new File(buildDir, "generated-src/java")
