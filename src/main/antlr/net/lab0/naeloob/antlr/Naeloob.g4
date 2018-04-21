@@ -10,12 +10,22 @@ parse
     : expr EOF
     ;
 
-blank
-    : SPACE
+expr
+    : blank* singleExpr blank*
+    | blank* or blank*
+    | blank* and blank*
     ;
 
-expr
-    : blank* word EQ sentence blank*
+singleExpr
+    : word EQ sentence
+    ;
+
+or
+    : singleExpr (OR singleExpr)+
+    ;
+
+and
+    : singleExpr (SPACE singleExpr)+
     ;
 
 word
@@ -35,8 +45,13 @@ letter
     : UPPER | LOWER
     ;
 
+blank
+    : SPACE
+    ;
+
 // Definitions of the elements used on the expressions
 EQ          :   '#' ;
+OR          :   '~' ;
 SPACE       :   ' ' ;
 UPPER       :   ('A'..'Z') ;
 LOWER       :   ('a'..'z') ;

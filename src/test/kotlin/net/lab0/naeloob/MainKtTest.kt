@@ -6,8 +6,6 @@ import net.lab0.naeloob.listener.AssertiveListener
 import net.lab0.naeloob.listener.InvalidQuery
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
-import org.antlr.v4.runtime.ParserRuleContext
-import org.antlr.v4.runtime.misc.Interval
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
@@ -32,7 +30,7 @@ internal class MainKtTest
     val parser = prepare(query).parser
 
     // it must not fail at evaluation
-    val expr = parser.expr()
+    val expr = parser.singleExpr()
 
     assertThat(expr.word().text).isEqualTo("AB")
     assertThat(expr.sentence().text).isEqualTo("C")
@@ -50,7 +48,7 @@ internal class MainKtTest
     val parser = prepare(query).parser
 
     // it must not fail at evaluation
-    val expr = parser.expr()
+    val expr = parser.singleExpr()
 
     assertThat(expr.word().text).isEqualTo("KAPAR")
     assertThat(expr.sentence().text).isEqualTo("FloosH")
@@ -67,14 +65,14 @@ internal class MainKtTest
     val parser = prepare.parser
 
     // it must not fail at evaluation
-    val expr = parser.expr()
+    val expr = parser.singleExpr()
 
     assertThat(expr.sentence().sourceCodeWithChildren)
         .isEqualTo("Hello out there")
   }
 
   @TestFactory
-  fun validQueries(): List<DynamicTest>
+  fun validSingleExprQueries(): List<DynamicTest>
   {
     val queries = listOf(
         "CABRA#Whatever",
@@ -89,7 +87,15 @@ internal class MainKtTest
         // the query may have spaces in the sentence
         "AA#Hello out there",
         "AA#Hello   out    there",
-        "AA#Hello out there    "
+        "AA#Hello out there    ",
+        // the query may be have disjunctions
+        "AA#A~BB#B",
+        "AA#A~BB#B~CC#C",
+        ('A'..'Z').joinToString(separator = "~") { "$it$it#$it" },
+        // the query may have conjunctions
+        "AA#A BB#B",
+        "AA#A BB#B CC#C",
+        ('A'..'Z').joinToString(separator = " ") { "$it$it#$it" }
     )
 
     return queries.map {
