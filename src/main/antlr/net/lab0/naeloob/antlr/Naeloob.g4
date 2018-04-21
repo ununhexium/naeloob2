@@ -15,7 +15,7 @@ expr
     | NOT expr                                      #notExpression
     | left=expr op=or right=expr                    #orExpression
     | left=expr op=and right=expr                   #andExpression
-    | singleExpr                                    #singleExpression
+    | single                                        #singleExpression
     ;
 
 and
@@ -26,7 +26,11 @@ or
  : OR
  ;
 
-singleExpr
+function
+    : letter+ LPAREN RPAREN
+    ;
+
+single
     : word EQ sentence
     ;
 
@@ -34,8 +38,14 @@ word
     : UPPER UPPER | UPPER UPPER UPPER UPPER UPPER
     ;
 
+date
+    : DIGIT DIGIT EQ DIGIT DIGIT EQ DIGIT DIGIT DIGIT DIGIT
+    ;
+
 sentence
     : letter
+    | function
+    | date
     | letter clause* letter
     ;
 
@@ -58,5 +68,6 @@ NOT         :   '!' ;
 SPACE       :   ' ' ;
 LPAREN      :   '[' ;
 RPAREN      :   ']' ;
+DIGIT       :   ('0'..'9') ;
 UPPER       :   ('A'..'Z') ;
 LOWER       :   ('a'..'z') ;

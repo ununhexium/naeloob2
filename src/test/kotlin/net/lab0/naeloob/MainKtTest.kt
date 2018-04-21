@@ -3,10 +3,12 @@ package net.lab0.naeloob
 import net.lab0.naeloob.antlr.NaeloobLexer
 import net.lab0.naeloob.antlr.NaeloobParser
 import net.lab0.naeloob.antlr.NaeloobParser.AndExpressionContext
+import net.lab0.naeloob.antlr.NaeloobParser.DateContext
+import net.lab0.naeloob.antlr.NaeloobParser.FunctionContext
 import net.lab0.naeloob.antlr.NaeloobParser.NotExpressionContext
-import net.lab0.naeloob.antlr.NaeloobParser.OrContext
 import net.lab0.naeloob.antlr.NaeloobParser.OrExpressionContext
 import net.lab0.naeloob.antlr.NaeloobParser.ParenExpressionContext
+import net.lab0.naeloob.antlr.NaeloobParser.SingleContext
 import net.lab0.naeloob.antlr.NaeloobParser.SingleExpressionContext
 import net.lab0.naeloob.listener.AssertiveListener
 import net.lab0.naeloob.listener.InvalidQuery
@@ -37,7 +39,7 @@ internal class MainKtTest
     val parser = prepare(query).parser
 
     // it must not fail at evaluation
-    val expr = parser.singleExpr()
+    val expr = parser.single()
 
     assertThat(expr.word().text).isEqualTo("AB")
     assertThat(expr.sentence().text).isEqualTo("C")
@@ -55,7 +57,7 @@ internal class MainKtTest
     val parser = prepare(query).parser
 
     // it must not fail at evaluation
-    val expr = parser.singleExpr()
+    val expr = parser.single()
 
     assertThat(expr.word().text).isEqualTo("KAPAR")
     assertThat(expr.sentence().text).isEqualTo("FloosH")
@@ -72,7 +74,7 @@ internal class MainKtTest
     val parser = prepare.parser
 
     // it must not fail at evaluation
-    val expr = parser.singleExpr()
+    val expr = parser.single()
 
     assertThat(expr.sentence().sourceCode)
         .isEqualTo("Hello out there")
@@ -157,6 +159,35 @@ internal class MainKtTest
 
     val and = paren.getRuleContext(AndExpressionContext::class.java, 0)
     assertThat(and.sourceCode).isEqualTo("AA#A BB#B")
+  }
+
+  @Test
+  fun `supports functions parsing`()
+  {
+    val query = "TIMER#Time[]"
+
+    val single = prepare(query).parser.single()
+    assertThat(single).isInstanceOf(SingleContext::class.java)
+
+    val function = single.sentence()
+    assertThat(function.sourceCode)
+        .isEqualTo("Time[]")
+        .isInstanceOf(FunctionContext::class.java)
+  }
+
+  @Test
+  fun `supports broken dates`()
+  {
+    val query = "TIMER#33#22#1111"
+
+    val single = prepare(query).parser.single()
+    assertThat(single).isInstanceOf(SingleContext::class.java)
+
+    val function = single.sentence().date()
+    assertThat(function)
+        .isInstanceOf(DateContext::class.java)
+    assertThat(function.sourceCode)
+        .isEqualTo("33#22#1111")
   }
 
   @TestFactory
