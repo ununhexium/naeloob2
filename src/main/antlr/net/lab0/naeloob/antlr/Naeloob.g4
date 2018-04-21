@@ -7,25 +7,27 @@ grammar Naeloob;
 
 // The root of the expression
 parse
-    : expr EOF
+    : blank* expr blank* EOF
     ;
 
 expr
-    : blank* singleExpr blank*
-    | blank* or blank*
-    | blank* and blank*
-    ;
-
-singleExpr
-    : word EQ sentence
-    ;
-
-or
-    : singleExpr (OR singleExpr)+
+    : LPAREN expr RPAREN                            #parenExpression
+    | NOT expr                                      #notExpression
+    | left=expr op=or right=expr                    #orExpression
+    | left=expr op=and right=expr                   #andExpression
+    | singleExpr                                    #singleExpression
     ;
 
 and
-    : singleExpr (SPACE singleExpr)+
+ : SPACE
+ ;
+
+or
+ : OR
+ ;
+
+singleExpr
+    : word EQ sentence
     ;
 
 word
@@ -52,6 +54,9 @@ blank
 // Definitions of the elements used on the expressions
 EQ          :   '#' ;
 OR          :   '~' ;
+NOT         :   '!' ;
 SPACE       :   ' ' ;
+LPAREN      :   '[' ;
+RPAREN      :   ']' ;
 UPPER       :   ('A'..'Z') ;
 LOWER       :   ('a'..'z') ;

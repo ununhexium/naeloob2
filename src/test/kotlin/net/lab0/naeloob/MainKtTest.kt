@@ -2,6 +2,9 @@ package net.lab0.naeloob
 
 import net.lab0.naeloob.antlr.NaeloobLexer
 import net.lab0.naeloob.antlr.NaeloobParser
+import net.lab0.naeloob.antlr.NaeloobParser.AndExpressionContext
+import net.lab0.naeloob.antlr.NaeloobParser.OrExpressionContext
+import net.lab0.naeloob.antlr.NaeloobParser.SingleExpressionContext
 import net.lab0.naeloob.listener.AssertiveListener
 import net.lab0.naeloob.listener.InvalidQuery
 import org.antlr.v4.runtime.CharStreams
@@ -11,6 +14,7 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.assertThrows
+import java.util.*
 
 
 internal class MainKtTest
@@ -67,13 +71,30 @@ internal class MainKtTest
     // it must not fail at evaluation
     val expr = parser.singleExpr()
 
-    assertThat(expr.sentence().sourceCodeWithChildren)
+    assertThat(expr.sentence().sourceCode)
         .isEqualTo("Hello out there")
+  }
+
+  @Test
+  fun `OR has priority over AND`()
+  {
+    val query = "AA#A BB#B~CC#C"
+    val expr = prepare(query).parser.parse().expr()
+
+    assertThat(expr.sourceCode).isEqualTo("AA#A BB#B~CC#C")
+
+    assertThat(expr.getRuleContext(SingleExpressionContext::class.java, 0).sourceCode)
+        .isEqualTo("AA#A")
+    assertThat(expr.getRuleContext(OrExpressionContext::class.java, 0).right.sourceCode)
+        .isEqualTo("CC#C")
+    assertThat(expr.getRuleContext(OrExpressionContext::class.java, 0).left.sourceCode)
+        .isEqualTo("BB#B")
   }
 
   @TestFactory
   fun validSingleExprQueries(): List<DynamicTest>
   {
+    val random = Random()
     val queries = listOf(
         "CABRA#Whatever",
         "AB#SomethingElse",
@@ -95,7 +116,18 @@ internal class MainKtTest
         // the query may have conjunctions
         "AA#A BB#B",
         "AA#A BB#B CC#C",
-        ('A'..'Z').joinToString(separator = " ") { "$it$it#$it" }
+        ('A'..'Z').joinToString(separator = " ") { "$it$it#$it" },
+        /**
+         * the query may combine AND and OR
+         * If such is the case, OR has priority over and
+         */
+        "AA#A BB#B",
+        "AA#A BB#B~CC#C",
+        ('A'..'Z')
+            .map { "$it$it#$it" }
+            .reduce({ a, b ->
+              a + "~ ".toList()[random.nextInt(2)] + b
+            })
     )
 
     return queries.map {

@@ -7,7 +7,7 @@ import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.misc.Interval
 
 
-val ParserRuleContext.sourceCodeWithChildren: String
+val ParserRuleContext.sourceCode: String
     get() = this.start.inputStream.getText(
         Interval(this.start.startIndex, this.stop.stopIndex)
     )
