@@ -30,6 +30,10 @@ function
     : letter+ LPAREN RPAREN
     ;
 
+dateAdd
+    : function ('+'|'-') DIGIT+
+    ;
+
 single
     : word EQ sentence
     ;
@@ -44,17 +48,18 @@ date
 
 sentence
     : letter
+    | dateAdd
     | function
     | date
     | letter clause* letter
     ;
 
 clause
-    : UPPER | LOWER | SPACE
+    : letter | SPACE
     ;
 
 letter
-    : UPPER | LOWER
+    : UPPER | LOWER | POINT | ASTERISK
     ;
 
 blank
@@ -68,6 +73,8 @@ NOT         :   '!' ;
 SPACE       :   ' ' ;
 LPAREN      :   '[' ;
 RPAREN      :   ']' ;
+POINT       :   '.' ;
+ASTERISK    :   '*' ;
 DIGIT       :   ('0'..'9') ;
 UPPER       :   ('A'..'Z') ;
 LOWER       :   ('a'..'z') ;

@@ -3,8 +3,8 @@ package net.lab0.naeloob
 import net.lab0.naeloob.antlr.NaeloobLexer
 import net.lab0.naeloob.antlr.NaeloobParser
 import net.lab0.naeloob.antlr.NaeloobParser.AndExpressionContext
+import net.lab0.naeloob.antlr.NaeloobParser.DateAddContext
 import net.lab0.naeloob.antlr.NaeloobParser.DateContext
-import net.lab0.naeloob.antlr.NaeloobParser.FunctionContext
 import net.lab0.naeloob.antlr.NaeloobParser.NotExpressionContext
 import net.lab0.naeloob.antlr.NaeloobParser.OrExpressionContext
 import net.lab0.naeloob.antlr.NaeloobParser.ParenExpressionContext
@@ -172,11 +172,10 @@ internal class MainKtTest
     val function = single.sentence()
     assertThat(function.sourceCode)
         .isEqualTo("Time[]")
-        .isInstanceOf(FunctionContext::class.java)
   }
 
   @Test
-  fun `supports broken dates`()
+  fun `supports dates`()
   {
     val query = "TIMER#33#22#1111"
 
@@ -188,6 +187,24 @@ internal class MainKtTest
         .isInstanceOf(DateContext::class.java)
     assertThat(function.sourceCode)
         .isEqualTo("33#22#1111")
+  }
+
+  @Test
+  fun `supports dates offset`()
+  {
+    val query = "TIMER#Time[]+0"
+
+    val single = prepare(query).parser.single()
+    assertThat(single).isInstanceOf(SingleContext::class.java)
+
+    val function = single.sentence().dateAdd()
+    assertThat(function)
+        .isInstanceOf(DateAddContext::class.java)
+
+    assertThat(function.sourceCode)
+        .isEqualTo("Time[]+0")
+
+//    val added = function.
   }
 
   @TestFactory
@@ -226,7 +243,26 @@ internal class MainKtTest
             .map { "$it$it#$it" }
             .reduce({ a, b ->
               a + "~ ".toList()[random.nextInt(2)] + b
-            })
+            }),
+        // support point wildcard
+        "AA#.",
+        "AA#a.",
+        "AA#.a",
+        "AA#a.a",
+        "AA#..",
+        "AA#...",
+        // support star wildcard
+        "AA#*",
+        "AA#a*",
+        "AA#*a",
+        "AA#a*a",
+        "AA#**",
+        "AA#***",
+        // time operations
+        "TIMER#Date[]+0",
+        "TIMER#Date[]-0",
+        "TIMER#Date[]+116",
+        "TIMER#Date[]-116"
     )
 
     return queries.map {
