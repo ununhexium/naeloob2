@@ -10,8 +10,12 @@ parse
     : expr EOF
     ;
 
+blank
+    : SPACE
+    ;
+
 expr
-    : word EQ sentence
+    : blank* word EQ sentence blank*
     ;
 
 word
@@ -28,6 +32,7 @@ letter
 
 // Definitions of the elements used on the expressions
 EQ          :   '#' ;
+SPACE       :   ' ' ;
 UPPER       :   ('A'..'Z') ;
 LOWER       :   ('a'..'z') ;
 // This would not be possible: UPPER and LOWER overlap with the definition of LETTER

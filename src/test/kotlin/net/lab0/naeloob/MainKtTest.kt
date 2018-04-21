@@ -58,13 +58,24 @@ internal class MainKtTest
     val queries = listOf(
         "CABRA#Whatever",
         "AB#SomethingElse",
-        "GR#Nope"
+        "GR#Nope",
+        // the query may or may not have any number of spaces around it
+        "AA#A",
+        "AA#A ",
+        " AA#A",
+        " AA#A ",
+        "     AA#A   "
     )
 
     return queries.map {
-      DynamicTest.dynamicTest(it, { parse(it).parse() })
+      DynamicTest.dynamicTest(dot(it), { parse(it).parse() })
     }
   }
+
+  /**
+   * Add upper dot diacritic over invisible chars to see it in tests and prevent trimming
+   */
+  private fun dot(it: String) = it.replace(" ", " \u02D9")
 
   private fun parse(query: String): NaeloobParser
   {
