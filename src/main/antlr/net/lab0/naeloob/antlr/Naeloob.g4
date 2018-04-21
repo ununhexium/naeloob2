@@ -23,7 +23,12 @@ word
     ;
 
 sentence
-    : letter+
+    : letter
+    | letter clause* letter
+    ;
+
+clause
+    : UPPER | LOWER | SPACE
     ;
 
 letter
@@ -35,6 +40,3 @@ EQ          :   '#' ;
 SPACE       :   ' ' ;
 UPPER       :   ('A'..'Z') ;
 LOWER       :   ('a'..'z') ;
-// This would not be possible: UPPER and LOWER overlap with the definition of LETTER
-// It must be defined in the parser, not the lexer
-// LETTER : LOWER | UPPER ;

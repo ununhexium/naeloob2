@@ -20,7 +20,7 @@ class AssertiveListener : ANTLRErrorListener
       configs: ATNConfigSet?
   )
   {
-    Assertions.fail("reportAttemptingFullContext")
+    throw InvalidQuery("reportAttemptingFullContext")
   }
 
   override fun syntaxError(
@@ -32,7 +32,7 @@ class AssertiveListener : ANTLRErrorListener
       e: RecognitionException?
   )
   {
-    Assertions.fail("Syntax error line $line:$charPositionInLine -> $msg", e)
+    throw InvalidQuery("Syntax error line $line:$charPositionInLine -> $msg", e)
   }
 
   override fun reportAmbiguity(
@@ -45,7 +45,7 @@ class AssertiveListener : ANTLRErrorListener
       configs: ATNConfigSet?
   )
   {
-    Assertions.fail("reportAmbiguity")
+    throw InvalidQuery("reportAmbiguity")
   }
 
   override fun reportContextSensitivity(
@@ -57,6 +57,6 @@ class AssertiveListener : ANTLRErrorListener
       configs: ATNConfigSet?
   )
   {
-    Assertions.fail("reportContextSensitivity")
+    throw InvalidQuery("reportContextSensitivity")
   }
 }

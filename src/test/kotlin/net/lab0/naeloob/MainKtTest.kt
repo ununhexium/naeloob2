@@ -3,12 +3,16 @@ package net.lab0.naeloob
 import net.lab0.naeloob.antlr.NaeloobLexer
 import net.lab0.naeloob.antlr.NaeloobParser
 import net.lab0.naeloob.listener.AssertiveListener
+import net.lab0.naeloob.listener.InvalidQuery
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.misc.Interval
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
+import org.junit.jupiter.api.assertThrows
 
 
 internal class MainKtTest
@@ -25,7 +29,7 @@ internal class MainKtTest
     val query = "AB#C"
 
     // and its parser
-    val parser = parse(query)
+    val parser = prepare(query).parser
 
     // it must not fail at evaluation
     val expr = parser.expr()
@@ -43,13 +47,30 @@ internal class MainKtTest
     val query = "KAPAR#FloosH"
 
     // and its parser
-    val parser = parse(query)
+    val parser = prepare(query).parser
 
     // it must not fail at evaluation
     val expr = parser.expr()
 
     assertThat(expr.word().text).isEqualTo("KAPAR")
     assertThat(expr.sentence().text).isEqualTo("FloosH")
+  }
+
+  @Test
+  fun `Ending spaces in 'AA#Hello out there    ' are not part of the sentence`()
+  {
+    // given a query
+    val query = "AA#Hello out there    "
+
+    // and its parser
+    val prepare = prepare(query)
+    val parser = prepare.parser
+
+    // it must not fail at evaluation
+    val expr = parser.expr()
+
+    assertThat(expr.sentence().sourceCodeWithChildren)
+        .isEqualTo("Hello out there")
   }
 
   @TestFactory
@@ -64,11 +85,28 @@ internal class MainKtTest
         "AA#A ",
         " AA#A",
         " AA#A ",
-        "     AA#A   "
+        "     AA#A   ",
+        // the query may have spaces in the sentence
+        "AA#Hello out there",
+        "AA#Hello   out    there",
+        "AA#Hello out there    "
     )
 
     return queries.map {
-      DynamicTest.dynamicTest(dot(it), { parse(it).parse() })
+      DynamicTest.dynamicTest(dot(it), { prepare(it).parser.parse() })
+    }
+  }
+
+  @TestFactory
+  fun invalidQueries(): List<DynamicTest>
+  {
+    val queries = listOf(
+        // this in invalid because the sentence can't start with space
+        "AA# Hello out there"
+    )
+
+    return queries.map {
+      DynamicTest.dynamicTest(dot(it), { assertThrows<InvalidQuery> { prepare(it).parser.parse() } })
     }
   }
 
@@ -77,13 +115,15 @@ internal class MainKtTest
    */
   private fun dot(it: String) = it.replace(" ", " \u02D9")
 
-  private fun parse(query: String): NaeloobParser
+  private fun prepare(query: String): Parsing
   {
-    val lexer = NaeloobLexer(CharStreams.fromString(query))
+    val charStream = CharStreams.fromString(query)
+    val lexer = NaeloobLexer(charStream)
     lexer.addErrorListener(listener)
     val tokens = CommonTokenStream(lexer)
     val parser = NaeloobParser(tokens)
     parser.addErrorListener(listener)
-    return parser
+    return Parsing(charStream, lexer, parser)
   }
 }
+

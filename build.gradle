@@ -71,3 +71,9 @@ dependencies {
 compileJava.dependsOn generateGrammarSource
 
 sourceSets.main.java.srcDir new File(buildDir, "generated-src/java")
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
