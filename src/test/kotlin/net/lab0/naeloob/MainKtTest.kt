@@ -2,8 +2,11 @@ package net.lab0.naeloob
 
 import net.lab0.naeloob.antlr.NaeloobLexer
 import net.lab0.naeloob.antlr.NaeloobParser
+import net.lab0.naeloob.antlr.NaeloobParser.AndExpressionContext
 import net.lab0.naeloob.antlr.NaeloobParser.NotExpressionContext
+import net.lab0.naeloob.antlr.NaeloobParser.OrContext
 import net.lab0.naeloob.antlr.NaeloobParser.OrExpressionContext
+import net.lab0.naeloob.antlr.NaeloobParser.ParenExpressionContext
 import net.lab0.naeloob.antlr.NaeloobParser.SingleExpressionContext
 import net.lab0.naeloob.listener.AssertiveListener
 import net.lab0.naeloob.listener.InvalidQuery
@@ -124,6 +127,36 @@ internal class MainKtTest
 
     val not = or.getRuleContext(NotExpressionContext::class.java, 0)
     assertThat(not.sourceCode).isEqualTo("!AA#A")
+  }
+
+  @Test
+  fun `parent override priority between AND and OR`()
+  {
+    val query = "[AA#A BB#B]~CC#C"
+
+    val or = prepare(query).parser.parse().expr()
+    assertThat(or).isInstanceOf(OrExpressionContext::class.java)
+
+    val paren = or.getRuleContext(ParenExpressionContext::class.java, 0)
+    assertThat(paren.sourceCode).isEqualTo("[AA#A BB#B]")
+
+    val and = paren.getRuleContext(AndExpressionContext::class.java, 0)
+    assertThat(and.sourceCode).isEqualTo("AA#A BB#B")
+  }
+
+  @Test
+  fun `parent override priority between NOT and OR`()
+  {
+    val query = "![AA#A BB#B]"
+
+    val not = prepare(query).parser.parse().expr()
+    assertThat(not).isInstanceOf(NotExpressionContext::class.java)
+
+    val paren = not.getRuleContext(ParenExpressionContext::class.java, 0)
+    assertThat(paren.sourceCode).isEqualTo("[AA#A BB#B]")
+
+    val and = paren.getRuleContext(AndExpressionContext::class.java, 0)
+    assertThat(and.sourceCode).isEqualTo("AA#A BB#B")
   }
 
   @TestFactory
