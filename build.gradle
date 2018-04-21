@@ -1,0 +1,71 @@
+buildscript {
+    ext.kotlin_version = '1.2.40'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+plugins {
+    id "org.jetbrains.kotlin.jvm" version "1.2.40"
+    id 'idea'
+    id 'maven'
+}
+
+ext.antlrVersion = '4.7.1'
+ext.assertJVersion = '3.9.0'
+ext.junitPlatformVersion = '1.1.1'
+ext.junitJupiterVersion = '5.1.1'
+ext.kotlinVersion = '1.2.40'
+
+apply plugin: 'antlr'
+apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'kotlin'
+
+int javaVersion = Integer.valueOf((String) JavaVersion.current().getMajorVersion())
+if (javaVersion < 10) apply plugin: 'jacoco'
+
+repositories {
+    mavenCentral()
+}
+
+test {
+    useJUnitPlatform {
+        includeEngines 'junit-jupiter'
+        excludeEngines 'junit-vintage'
+
+        // includeTags 'fast'
+        excludeTags 'slow'
+    }
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
+
+    reports {
+        html.enabled = true
+    }
+
+    if (javaVersion < 10) finalizedBy jacocoTestReport
+}
+
+dependencies {
+    compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
+
+    testCompile("org.assertj:assertj-core:${assertJVersion}")
+    testCompile("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")
+
+    testRuntime("org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}")
+    testRuntime("org.junit.platform:junit-platform-launcher:${junitPlatformVersion}") {
+        because 'allows tests to run from IDEs that bundle older version of launcher'
+    }
+
+     antlr "org.antlr:antlr4:${antlrVersion}"
+}
+
+sourceSets.main.java.srcDir new File(buildDir, "generated-src/java")
