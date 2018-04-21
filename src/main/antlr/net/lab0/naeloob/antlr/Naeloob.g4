@@ -19,7 +19,7 @@ expr
     ;
 
 and
- : SPACE
+ : ' '
  ;
 
 or
@@ -43,7 +43,7 @@ word
     ;
 
 date
-    : DIGIT DIGIT EQ DIGIT DIGIT EQ DIGIT DIGIT DIGIT DIGIT
+    : DIGIT DIGIT '#' DIGIT DIGIT '#' DIGIT DIGIT DIGIT DIGIT
     ;
 
 sentence
@@ -59,7 +59,7 @@ clause
     ;
 
 letter
-    : UPPER | LOWER | POINT | ASTERISK
+    : UPPER | LOWER | '.' | '*'
     ;
 
 blank
@@ -73,8 +73,6 @@ NOT         :   '!' ;
 SPACE       :   ' ' ;
 LPAREN      :   '[' ;
 RPAREN      :   ']' ;
-POINT       :   '.' ;
-ASTERISK    :   '*' ;
 DIGIT       :   ('0'..'9') ;
 UPPER       :   ('A'..'Z') ;
 LOWER       :   ('a'..'z') ;

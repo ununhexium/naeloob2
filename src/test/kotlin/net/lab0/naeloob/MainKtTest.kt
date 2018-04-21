@@ -197,14 +197,14 @@ internal class MainKtTest
     val single = prepare(query).parser.single()
     assertThat(single).isInstanceOf(SingleContext::class.java)
 
-    val function = single.sentence().dateAdd()
-    assertThat(function)
+    val dateAdd = single.sentence().dateAdd()
+    assertThat(dateAdd)
         .isInstanceOf(DateAddContext::class.java)
 
-    assertThat(function.sourceCode)
+    assertThat(dateAdd.sourceCode)
         .isEqualTo("Time[]+0")
 
-//    val added = function.
+    assertThat(dateAdd.function().sourceCode).isEqualTo("Time[]")
   }
 
   @TestFactory
