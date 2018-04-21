@@ -2,7 +2,7 @@ package net.lab0.naeloob
 
 import net.lab0.naeloob.antlr.NaeloobLexer
 import net.lab0.naeloob.antlr.NaeloobParser
-import net.lab0.naeloob.antlr.NaeloobParser.AndExpressionContext
+import net.lab0.naeloob.antlr.NaeloobParser.NotExpressionContext
 import net.lab0.naeloob.antlr.NaeloobParser.OrExpressionContext
 import net.lab0.naeloob.antlr.NaeloobParser.SingleExpressionContext
 import net.lab0.naeloob.listener.AssertiveListener
@@ -89,6 +89,41 @@ internal class MainKtTest
         .isEqualTo("CC#C")
     assertThat(expr.getRuleContext(OrExpressionContext::class.java, 0).left.sourceCode)
         .isEqualTo("BB#B")
+  }
+
+  @Test
+  fun `an expression can be negated`()
+  {
+    val query = "!AA#A"
+    val not = prepare(query).parser.parse().expr()
+    assertThat(not.sourceCode)
+        .isEqualTo(query)
+
+    val single = not.getRuleContext(SingleExpressionContext::class.java, 0)
+    assertThat(single.sourceCode)
+        .isEqualTo(query.drop(1))
+  }
+
+  @Test
+  fun `not has priority over and`()
+  {
+    val query = "!AA#A BB#B"
+
+    val and = prepare(query).parser.parse().expr()
+
+    val not = and.getRuleContext(NotExpressionContext::class.java, 0)
+    assertThat(not.sourceCode).isEqualTo("!AA#A")
+  }
+
+  @Test
+  fun `not has priority over or`()
+  {
+    val query = "!AA#A~BB#B"
+
+    val or = prepare(query).parser.parse().expr()
+
+    val not = or.getRuleContext(NotExpressionContext::class.java, 0)
+    assertThat(not.sourceCode).isEqualTo("!AA#A")
   }
 
   @TestFactory
