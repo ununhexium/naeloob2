@@ -13,18 +13,11 @@ parse
 expr
     : LPAREN expr RPAREN                            #parenExpression
     | NOT expr                                      #notExpression
-    | left=expr op=or right=expr                    #orExpression
-    | left=expr op=and right=expr                   #andExpression
+    | left=expr op=OR right=expr                    #orExpression
+    | left=expr op=SPACE right=expr                 #andExpression
     | single                                        #singleExpression
+    | internalOr                                    #internalOrExpression
     ;
-
-and
- : ' '
- ;
-
-or
- : OR
- ;
 
 function
     : letter+ LPAREN RPAREN
@@ -38,6 +31,10 @@ single
     : word EQ sentence
     ;
 
+internalOr
+    : word EQ sentence (OR sentence)+
+    ;
+
 word
     : UPPER UPPER | UPPER UPPER UPPER UPPER UPPER
     ;
@@ -47,11 +44,11 @@ date
     ;
 
 sentence
-    : letter
-    | dateAdd
+    : dateAdd
     | function
     | date
     | letter clause* letter
+    | letter
     ;
 
 clause
@@ -59,7 +56,7 @@ clause
     ;
 
 letter
-    : UPPER | LOWER | '.' | '*'
+    : UPPER | LOWER | DIGIT | SAFE | '.' | '*'
     ;
 
 blank
@@ -76,3 +73,4 @@ RPAREN      :   ']' ;
 DIGIT       :   ('0'..'9') ;
 UPPER       :   ('A'..'Z') ;
 LOWER       :   ('a'..'z') ;
+SAFE        :   '_' ;

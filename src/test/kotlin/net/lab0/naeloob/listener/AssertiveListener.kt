@@ -20,7 +20,7 @@ class AssertiveListener : ANTLRErrorListener
       configs: ATNConfigSet?
   )
   {
-    throw InvalidQuery("reportAttemptingFullContext")
+    // throw InvalidQuery("reportAttemptingFullContext")
   }
 
   override fun syntaxError(

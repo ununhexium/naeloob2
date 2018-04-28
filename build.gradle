@@ -21,7 +21,7 @@ ext.antlrVersion = '4.7.1'
 ext.assertJVersion = '3.9.0'
 ext.junitPlatformVersion = '1.1.1'
 ext.junitJupiterVersion = '5.1.1'
-ext.kotlinVersion = '1.2.40'
+ext.kotlinVersion = '1.2.41'
 ext.moreKotlinVersion = '0.1.0'
 
 apply plugin: 'antlr'

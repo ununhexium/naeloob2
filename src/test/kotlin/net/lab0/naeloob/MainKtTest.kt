@@ -5,6 +5,7 @@ import net.lab0.naeloob.antlr.NaeloobParser
 import net.lab0.naeloob.antlr.NaeloobParser.AndExpressionContext
 import net.lab0.naeloob.antlr.NaeloobParser.DateAddContext
 import net.lab0.naeloob.antlr.NaeloobParser.DateContext
+import net.lab0.naeloob.antlr.NaeloobParser.InternalOrContext
 import net.lab0.naeloob.antlr.NaeloobParser.NotExpressionContext
 import net.lab0.naeloob.antlr.NaeloobParser.OrExpressionContext
 import net.lab0.naeloob.antlr.NaeloobParser.ParenExpressionContext
@@ -42,7 +43,7 @@ internal class MainKtTest
     val expr = parser.single()
 
     assertThat(expr.word().text).isEqualTo("AB")
-    assertThat(expr.sentence().text).isEqualTo("C")
+    assertThat(expr.sentence().sourceCode).isEqualTo("C")
     // this one is constant, no need to test it
     assertThat(expr.EQ().text).isEqualTo("#")
   }
@@ -60,7 +61,7 @@ internal class MainKtTest
     val expr = parser.single()
 
     assertThat(expr.word().text).isEqualTo("KAPAR")
-    assertThat(expr.sentence().text).isEqualTo("FloosH")
+    assertThat(expr.sentence().sourceCode).isEqualTo("FloosH")
   }
 
   @Test
@@ -207,6 +208,16 @@ internal class MainKtTest
     assertThat(dateAdd.function().sourceCode).isEqualTo("Time[]")
   }
 
+  @Test
+  fun `supports internal or`()
+  {
+    val query = "AA#A~B~C"
+
+    val expr = prepare(query).parser.expr()
+    val orSentences = expr.getRuleContext(InternalOrContext::class.java, 0)
+    assertThat(orSentences).isInstanceOf(InternalOrContext::class.java)
+  }
+
   @TestFactory
   fun validSingleExprQueries(): List<DynamicTest>
   {
@@ -262,7 +273,12 @@ internal class MainKtTest
         "TIMER#Date[]+0",
         "TIMER#Date[]-0",
         "TIMER#Date[]+116",
-        "TIMER#Date[]-116"
+        "TIMER#Date[]-116",
+        // internal OR with combinations
+        "AA#A~B~C~BB#B~C~D CC#C~D~E",
+        // the content can also have digits
+        "AA#123",
+        "AA#123~123"
     )
 
     return queries.map {
@@ -279,7 +295,9 @@ internal class MainKtTest
     )
 
     return queries.map {
-      DynamicTest.dynamicTest(dot(it), { assertThrows<InvalidQuery> { prepare(it).parser.parse() } })
+      DynamicTest.dynamicTest(dot(it), {
+        assertThrows<InvalidQuery> { prepare(it).parser.parse() }
+      })
     }
   }
 
