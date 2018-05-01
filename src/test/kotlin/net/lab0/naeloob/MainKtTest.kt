@@ -133,7 +133,7 @@ internal class MainKtTest
   }
 
   @Test
-  fun `parent override priority between AND and OR`()
+  fun `paren override priority between AND and OR`()
   {
     val query = "[AA#A BB#B]~CC#C"
 
